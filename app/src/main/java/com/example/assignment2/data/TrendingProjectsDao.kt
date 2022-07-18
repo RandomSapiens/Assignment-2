@@ -14,6 +14,8 @@ interface TrendingProjectsDao {
     @Query("SELECT * FROM trending_projects_table ORDER BY RANDOM() LIMIT 5")
     fun readFiveShuffleData():Flow<List<TrendingProjects>>
 
+
+
     @Query("UPDATE trending_projects_table SET is_favourite= NOT is_favourite WHERE  house_id=:id")
     suspend fun updateFavourite(id:Long)
 

@@ -1,6 +1,8 @@
 package com.example.assignment2
 
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 
 import androidx.compose.foundation.layout.*
@@ -9,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -17,30 +20,35 @@ import androidx.compose.ui.layout.ContentScale
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.assignment2.data.TrendingProjects
 import com.example.assignment2.data.TrendingProjectsViewModel
+import kotlinx.coroutines.flow.firstOrNull
 
 @Composable
 fun ProjectsRowView(
     navController: NavController? = null,
     mainViewModel: TrendingProjectsViewModel? = null
 ) {
-
+    Log.d("Uncer10nity","Project row view recomposed")
     var projects: List<TrendingProjects> by remember {
         mutableStateOf(emptyList())
     }
 
-//    var isFavList:List<Boolean> by
+
 
     LaunchedEffect(key1 = Unit) {
-        mainViewModel?.readFiveShuffleData?.collect {
-            projects = it
-        }
+        Log.d("Uncer10nity","I am Running again")
+        val randomItems=mainViewModel?.readFiveShuffleData?.firstOrNull()?: emptyList<TrendingProjects>()
+        projects=randomItems
     }
+
+
+    for(project in projects)Log.d("Uncer10nity","${project.houseName}")
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -74,28 +82,25 @@ fun ProjectsRowView(
                 fontWeight = FontWeight.Light
             )
         }
-        ProjectsList(mainViewModel,trendingProjects = projects)
-    }
-
-}
-
-
-@Composable
-fun ProjectsList(mainViewModel: TrendingProjectsViewModel?,trendingProjects: List<TrendingProjects>) {
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-    ) {
-        items(trendingProjects) { trendingProject ->
-            ProjectsCard(mainViewModel, trendingProject = trendingProject)
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+        ) {
+            items(projects) { trendingProject ->
+//                ProjectsCard(trendingProject = trendingProject){
+//                    trendingProject.isFavourite=!trendingProject.isFavourite
+//                    mainViewModel?.updateFavourite(trendingProject.houseId)
+//                }
+                ProjectsCard(trendingProject = trendingProject,mainViewModel)
+            }
         }
     }
+
 }
 
-
 @Composable
-fun ProjectsCard(mainViewModel: TrendingProjectsViewModel?,trendingProject: TrendingProjects) {
+fun ProjectsCard(trendingProject: TrendingProjects,mainViewModel: TrendingProjectsViewModel?) {
 
     var isFav by remember { mutableStateOf(trendingProject.isFavourite) }
 
@@ -103,14 +108,13 @@ fun ProjectsCard(mainViewModel: TrendingProjectsViewModel?,trendingProject: Tren
         elevation = 4.dp,
         modifier = Modifier
             .padding(12.dp)
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .width(300.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_baseline_home_24),
+                painter = painterResource(id = R.drawable.home),
                 contentDescription = "",
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,7 +123,8 @@ fun ProjectsCard(mainViewModel: TrendingProjectsViewModel?,trendingProject: Tren
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ){
                 Text(
                     text = trendingProject.houseName,
@@ -127,20 +132,25 @@ fun ProjectsCard(mainViewModel: TrendingProjectsViewModel?,trendingProject: Tren
                     fontWeight = FontWeight.Bold,
 
                 )
-                Image(
-                    painter = painterResource(id = R.drawable.ic_baseline_favorite_24),
-                    contentDescription ="",
-                    colorFilter = if (isFav) ColorFilter.tint(color = Color.Red) else ColorFilter.tint(color = Color.Gray) ,
-                    modifier = Modifier.clickable {
-                        isFav=!isFav
-                        mainViewModel?.updateFavourite(trendingProject.houseId)
-                    }
-                )
+
+                IconButton(onClick = {
+                    isFav=!isFav
+                    mainViewModel?.updateFavourite(trendingProject.houseId)
+                }) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_baseline_favorite_24),
+                        contentDescription ="",
+                        colorFilter = if (isFav) ColorFilter.tint(color = Color.Red) else ColorFilter.tint(color = Color.Gray),
+                    )
+                }
             }
             Text(
                 text = trendingProject.houseOwner,
                 fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraLight
+                fontWeight = FontWeight.ExtraLight,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -178,7 +188,7 @@ fun PreviewHome() {
         modifier = Modifier.fillMaxSize()
     ) {
 //        ProjectsCard(trendingProject = initialData()[0])
-        ProjectsList(null,trendingProjects = initialData())
-//        ProjectsRowView()
+//        ProjectsList(null,trendingProjects = initialData())
+        ProjectsRowView()
     }
 }
