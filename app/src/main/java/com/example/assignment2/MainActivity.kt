@@ -14,8 +14,8 @@ class MainActivity : ComponentActivity() {
     private val mainViewModel:TrendingProjectsViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val projects= initialData()
-//        for(project in projects)mainViewModel.addTrendingProjects(project)
+        val projects= initialData()
+        for(project in projects)mainViewModel.addTrendingProjects(project)
         setContent {
             MainContent(mainViewModel)
         }
